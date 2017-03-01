@@ -1,0 +1,298 @@
+---
+title: "Statistics 243, Final Project: An R Package for Multiple Factor Analysis"
+author: "Minchul Shin, Donghyeon Ko, Taehee Jung, Lev Golod, Temi N Lal"
+date: "December 2, 2016"
+output: slidy_presentation
+---
+
+## Multiple Factor Analysis
+
+- The purpose of our research was to create an R package to implemet Multiple Factor Analysis (MFA).
+- MFA is an extension of principle component analysis (PCA) that is used to handle situations in which:
+    - we have multiple data tables that measure sets of variables collected on the same observations, or
+    - we have multiple data tables where the same variables are measured on different observations.
+- Steps of MFA:
+<ol>
+    1. Compute a PCA of on each data table.
+    2. "Normalize" each data table by dividing all its elements by the first singular value obtained from its PCA.
+    3. Aggregate the normalized sub-tables into one grand table.
+    4. Analyze the grand table with a non-normalized PCA.
+</ol>
+- The results of MFA are a set of factor scores for the observations, loadings for the variables, and a set of partial factor scores for the data table.
+
+## MFA Conceptually
+
+<img style="float: left;" src="https://ai2-s2-public.s3.amazonaws.com/figures/2016-11-01/d10dd1de036400ed2d660c76ad9dae34290bca52/2-Figure1-1.png" height="530px" width="225px" />
+
+<center>
+The general purpose of MFA is to bring out main factors of data  variability in  a  balanced  manner according to several sets of variables.
+  
+First, we normalize each of the individual data sets so that their first principal component has the same length.
+  
+After this, we can combine the data tables into a common representation of the observations, which we call the "compromise."
+
+The PCA of the compromise decomposes its variance into a new set of <b> orthonormal variables  </b> ordered by the amount of variance that each component explains.
+
+The coordinates of the observations on the components are called factor scores and can be used to plot maps of the observations.
+
+In these plots, observations are represented as points such that the distances give us an idea of the similarities between them.
+</center>
+
+## Matrix Algebra and Terminology of MFA
+
+- In the first step of MFA, each data table is expressed via its SVD as 
+$\bf{X}_{[k]} = \bf{U}_{[k]}\bf{\Gamma}_{[k]}\bf{V}^\intercal_{[k]}$ with $\bf{U}^\intercal_{[k]}\bf{U}_{[k]} = \bf{V}^\intercal_{[k]}\bf{V}_{[k]} = \bf{I}$.
+- From the SVD of each table we obtain its factor scores that are computed as $\bf{G}_{[k]} = \bf{U}_{[k]}\bf\Gamma_{[k]}$. The matrices ${\bf{U}_{[k]}}$ and ${\bf{V}_{[k]}}$ store the left and right singular vectors, respectively, of table $\bf{X}_{[k]}$, whose singular values are in the diagonal of diagonal matrix $\bf\Gamma_{[k]}$.
+The weight of table $k$, denoted $\alpha_{[k]}$, is the inverse of the first squared singular value.
+- Weights are used to compute the GSVD of X under the constraints provided by $\bf{M}$
+(masses for the observations), and $\bf{A}$ (squared singular value derived weights for the K tables).
+This GSVD ($\bf{X} = \bf{P}\Delta\bf{Q}^\intercal$ with $\bf{P}^\intercal\bf{M}\bf{P} = \bf{Q}^\intercal\bf{A}\bf{Q} = \bf{I}$) provides <u><b>factor scores</b></u> to describe the observations and <u><b>factor loadings</b></u> to describe the variables.
+- We often write $\bf{X} = \bf{FQ}^\intercal$ with $\bf{F} = \bf{P}\Delta$, where $\bf{F}$ stores the factor scores and $\bf{Q}$ stores the loadings.
+
+
+## The Wine Data Set Example
+
+- Let's look at an example of some data on which we might use the MFA package.
+- Consider the following multitable data from a fictitious wine tasting experiment.
+- 10 critics rated 12 different wines on a 9-point scale.
+- All critics used variables V1, V2, V3, and V4. Some used more.
+- The table below shows us the data at a glance.
+- The columns V1, ..., V5 represent critic 1's ratings, while the next four columns are from the second critic, and so on.
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(mfaMKTLT)
+winedata[1:6,1:18]
+```
+
+## The Package: mfaMKTLT
+
+- The package mfaMKTLT was created to implement MFA with ease.
+- It contains the main function <i> mfa() </i> which creates an mfa object and the following methods to use on those objects:
+    - print() / print.mfa()
+    - plot() / plot.mfa()
+    - eigsum()
+    - obscount()
+    - varcount()
+    - tabcount()
+    - rv_coeff()
+    - lg_coeff()
+    - gentable()
+    - bootstrap()
+    
+## mfa()
+```{r, eval = FALSE}
+mfa(data, sets, ncomps = NULL, center = TRUE, scale = TRUE)
+```
+
+```{r create_mfa, echo = FALSE}
+mfa1 <- mfa(winedata, list(c(1:6), c(7:12), c(13:18), c(19:23), c(24:29), 
+                           c(30:34), c(35:38), c(39:44), c(45:49), c(50:53)))
+```
+
+- The mfa function takes in a data set and a list of vectors indicating the sets of variables. 
+
+- In addition, the user can use ncomps to specify the number of components or factors to be extracted and if and how he or she wants to center and scale the active variables.
+
+- The function returns an S3 object of class "mfa" with elements:
+    - lambda: eigenvalues
+    - F: common factor scores
+    - Fpartial: each sub-tables' partial factor scores
+    - Q: loadings
+    
+## print()
+
+```{r, eval = FALSE}
+print.mfa(x, ...)
+```
+
+- This function displays basic information about the mfa object:
+
+```{r print_demo}
+mfa1
+```
+
+## plot()
+
+```{r, eval = FALSE}
+plot.mfa(x, type, xdim = 1, ydim = 2, facetrows = 2, size = 3, plotfn = myplot1, subtabs = NULL, ...)
+```
+Given two dimensions, the plot function displays three kinds of graphics:
+<ol>
+1. eigenvectors
+2. the compromise of the tables
+3. partial factor scores
+4. compromise + partial factor scores
+5. variable loadings
+6. bootstrap ratio(will be explained later in chapter bootstrap())
+</ol>
+
+## Plotting Eigenvectors
+
+In this plot, we use the eigenvalues, which is a default value in the mfa object.
+Thus, no arguments except data and type are used in this plot. Based on the eigenvalues of the components, bar chart is plotted.
+```{r, eval = TRUE}
+plot(mfa1, type = "eigenvalues")
+```
+
+## Plotting Compromise/Common Factor Scores
+
+The Compromise Factor Scores represent a compromise among the sub-tables regarding the coordinates of each object (row) along the components. The user can choose which components she or he wants to see. The defaults are components 1 and 2.
+
+Default legend of this plot is rownames, which is mached to observation name. But we can set up legend as we want. 
+
+```{r, eval = TRUE}
+plot(mfa1, type = "compromise", xdim = 3, ydim = 7, size = 5,
+     legend=substr(rownames(mfa1$Fcommon),1,2), label=substr(rownames(mfa1$Fcommon),3,3), 
+     mytitle = "Common Factor Scores")
+```
+
+## Plotting Partial Factor Scores
+
+The Partial Factor Scores plot lets us see where the objects fall along the component axes for each individual sub-table. The user can choose which sub-table(s) she/he wants to see with subtabs, legend and label.
+
+```{r, eval = TRUE}
+plot(mfa1, type = "partial.factor", size = 2.5, subtabs = c(1,2,4),
+     xdim = 2, ydim = 3, facetrows = 3,
+     legend=substr(rownames(mfa1$Fpartial[[1]]),1,2), label=substr(rownames(mfa1$Fcommon),3,3))
+
+```
+
+## Plotting Compromise + Partial Factor Scores
+
+Two plots, Compromise and Partial Factor scores can be combined in an one plot. 
+Arguments xdim/ydim can be chosen by user. Also, label and legend can be applied on the plots.
+
+```{r, eval = TRUE}
+plot(mfa1, type = "compromise.partial", xdim = 1, ydim = 2, size = 5,
+     legend=substr(rownames(mfa1$Fcommon),1,2), label=substr(rownames(mfa1$Fcommon),3,3))
+```
+
+## Plotting Variable Loadings
+
+Loadings are the right singular vectors from the Generalized Singular Value Decomposition. 
+Users can write down the informative legend, with the optional `legend` paramter.
+To easily recognize the plots, choose sub-tables 9 and 10 only.
+
+```{r, eval = TRUE}
+plot(mfa1, type = "loadings", size = 2.5, subtabs = c(9,10), 
+     legend = c("cat pee", "passion fruit", "green pepper", "mineral",
+                "optional 1", "optional 2"))
+```
+
+## eigsum()
+
+```{r, eval = FALSE}
+eigsum(x, verbose = FALSE)
+```
+
+This is a complementary method used to compute eigenvalues. It takes an mfa object and returns a table with the singular values, eigenvalues, cumulative, percentage of interia, and cummulative percentage of inertia for all the extracted components:
+
+```{r}
+summary <- eigsum(mfa1)
+round(summary, 3)[,1:7]
+```
+
+## Contributions
+
+Contributions are descriptive statistics derived from the mfa object. They help tell us how the observations, variables, and tables contribute to the variability of the extracted dimensions.
+
+### obscount()
+The contribution of observation $i$ to component $l$, denoted $ctr_{i,l}$, is computed as
+  
+<center>
+$ctr_{i,l} =  \frac{m_i \times f^2_{i,l}}{\lambda_l}$
+</center>
+where $m_i$ is the mass of the $i$th observation, $f_{i,l}$ is the factor score of the $i$th observation for the $l$th dimension and $\lambda_l$ is the eigenvalue of the $l$th dimension.
+
+***
+
+### varcount()
+The contribution of variable $j$ to component $l$, denoted $ctr_{j,l}$, is computed as
+  
+<center>
+$ctr_{j,l} = a_j \times q^2_{j,l}$
+</center>
+where $a_j$ is the $\alpha$ weight for the $j$th variable, and $q_{i,l}$ is the loading of the $j$th variable for the $l$th dimension.
+
+***
+
+### tabcount()
+Since a table comprimes of several variables, its contribution can just be defined as the sum of the contributions of its variables. The contribution of table $k$ to component $l$ is denoted $ctr_{k,l}$ and calculated as
+
+<center>
+$ctr_{k,l} = \sum\limits_{\textit{j}}^{\textit{J}_{[k]}} ctr_{j,l}$.
+</center>
+
+These three functions take an mfa object and return a matrix with the corresponding contribution values.
+
+## Coefficients to study Between-Table Structure
+
+### rv_coeff()
+```{r, eval = FALSE}
+rv_coeff(table1, table2)
+```
+To evaluate the similarity between two tables, we use the $\textit{R}_{\textit{V}}$ coefficient.
+
+The $\textit{R}_{\textit{V}}$ coefficient varies between 0 and 1 and reflects the amount of variance shared by two matrices. The $\textit{R}_{\textit{V}}$ coefficient between data tables $k$ and $j$ is computed as
+
+<center>
+$\textit{R}_{\textit{V k,j}} = \frac{trace\{(\bf{X}_{[k]}\bf{X}^\intercal_{[k]}) \times (\bf{X}_{[j]}\bf{X}^\intercal_{[j]})\}}{\sqrt(trace\{(\bf{X}_{[k]}\bf{X}^\intercal_{[k]}) \times (\bf{X}_{[k]}\bf{X}^\intercal_{[k]})\} \times  trace\{(\bf{X}_{[j]}\bf{X}^\intercal_{[j]}) \times (\bf{X}_{[j]}\bf{X}^\intercal_{[j]})\})}$
+</center>
+
+The function takes two tables and calculates this value.
+
+***
+
+### lg_coeff()
+
+```{r, eval = FALSE}
+lg_coeff(table1, table2)
+```
+A slightly different coefficient, called the $L_g$ coefficient, reflectrs the MFA normalization and takes positive values. The $L_g$ coefficient between data tables $k$ and $j$ is
+
+<center>
+$L_{g (k,j)} = \frac{trace\{(\bf{X}_{[k]}\bf{X}^\intercal_{[k]}) \times (\bf{X}_{[j]}\bf{X}^\intercal_{[j]})\}}{\gamma^2_{1,k} \times \gamma^2_{1,j}} = trace\{(\bf{X}_{[k]}\bf{X}^\intercal_{[k]}) \times (\bf{X}_{[j]}\bf{X}^\intercal_{[j]})\} \times (\alpha_{[k]} \times \alpha_{[j]})$.
+</center>
+
+Similarly, the lg_coeff() method uses the equation above to calculate the desired coefficient.
+
+## gentable()
+
+```{r, eval = FALSE}
+gentable(data, sets = list(1:3, 4:5, 6:10), func = rv_coeff, dataname = NULL)
+```
+This function takes a data set and a list with "sets" of variables, and returns either a table of $R_V$ coefficients or $L_g$ coefficients, based on user's choice.
+
+```{r}
+gentable(mfa1$origdata, list(c(1:6), c(7:12), c(13:18)),
+          paste0("sub-table_", 1:3), func = rv_coeff)
+
+gentable(mfa1$origdata, list(c(1:6), c(7:12), c(13:18)),
+          paste0("sub-table_", 1:3), func = lg_coeff)
+```
+
+## bootstrap()
+
+```{r, bt}
+bt_rslt <- bootstrap(mfa1$Fpartial, 1000)
+```
+
+This function performs bootstrapping in order to estimate the stability of the compromise factor scores. First, it gets the bootstrap samples of the partial factor scores with sample size as a value of argument bootstrap_size. Its difualt value is 1000. Then it calculates the t-value, which is bootstrap mean divided by standard deviation. Function results keep this t-value, and also bootstrap mean and standard deviation.
+
+```{r, bt_rslt}
+head(bt_rslt$t_value[,1:2],4)
+head(bt_rslt$bt_mean[,1:2],4)
+head(bt_rslt$bt_sd[,1:2],4)
+```
+
+
+***
+
+### Plotting bootstrap ratio
+
+The plot value is based on the component's t-value of the bootstrap result. It is a rotated bar chart where the x-axis is the t-value and y-axis is the observation name(=rownames.) Users can choose as many components as they want with the argument bootstrap_comps. The defaule value is c(1,2). 
+
+Since final plots are represented as a multi-plots on one page, we can control how many rows the sub-plots are placed into with the argument `facetrows`. The default value of this argument is 2.  
+```{r, bt_plot, message = FALSE, warning=FALSE}
+plot(mfa1, type= "bootstrap", bootstrap_size = 1000, bootstrap_comps=c(1,2), facetrows=1)
+```

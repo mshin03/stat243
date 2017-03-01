@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Minchul Shin, Ko Donghyeon, Taehee Jung, Lev Golod, Temi N Lal" />
+
+<meta name="date" content="2016-12-06" />
+
+<title>MFA with mfaMKTLT</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">MFA with mfaMKTLT</h1>
+<h4 class="author"><em>Minchul Shin, Ko Donghyeon, Taehee Jung, Lev Golod, Temi N Lal</em></h4>
+<h4 class="date"><em>2016-12-06</em></h4>
+
+
+
+<div id="acknowledgements" class="section level2">
+<h2>Acknowledgements</h2>
+<p>The authors of the package would like to thank Professor Gaston Sanchez, as<br />
+well as Herve Abdi1, Lynne J. Williams, and Domininique Valentin (WIREs Comput<br />
+Stat 2013. doi: 10.1002/wics.1246)</p>
+<hr />
+</div>
+<div id="when-to-use-mfa" class="section level2">
+<h2>When to use MFA?</h2>
+<p>MFA (multifactor analysis) is a techinque designed to “handle multiple data<br />
+tables that measure sets of variables collected on the same observations.” For<br />
+example, the file <code>winedata</code> which comes included with this package, has the<br />
+results of a fictitious wine-tasting experiment, where 10 wine critics rated<br />
+12 different wines from different regions.</p>
+<hr />
+</div>
+<div id="preliminaries" class="section level2">
+<h2>Preliminaries</h2>
+<p>Let’s familiarize ourselves a bit with this data set. Each wine critic used<br />
+4 common variables (V1…V4) to rate the wines, and was also free to choose up<br />
+to two additional variables. Whenever we see “V1” or “V1.” in the variable<br />
+names, that indicates the beginning of a new block or sub-table. For example,<br />
+the first 6 columns correspond to critic 1, and the next 6 correspond to critic<br />
+2. The different wines are represented as row names.</p>
+<p>In general, when using the <code>&quot;mfaMKTLT&quot;</code> package, the data must be either a data<br />
+frame or a matrix.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(winedata[<span class="dv">1</span>:<span class="dv">12</span>])
+<span class="co">#&gt;     V1 V2 V3 V4 V5 V6 V1.1 V2.1 V3.1 V4.1 V7 V8</span>
+<span class="co">#&gt; NZ1  8  6  7  4  1  6    8    6    8    3  7  5</span>
+<span class="co">#&gt; NZ2  7  5  8  1  2  8    6    5    6    3  7  7</span>
+<span class="co">#&gt; NZ3  6  5  6  5  3  4    6    6    6    5  8  7</span>
+<span class="co">#&gt; NZ4  9  6  8  4  3  5    8    6    8    4  6  6</span>
+<span class="co">#&gt; FR1  2  2  2  8  7  3    2    3    1    7  4  3</span>
+<span class="co">#&gt; FR2  3  4  4  9  6  1    4    3    4    9  3  5</span>
+<span class="kw">is.data.frame</span>(winedata)
+<span class="co">#&gt; [1] TRUE</span></code></pre></div>
+<hr />
+</div>
+<div id="sets" class="section level2">
+<h2>Sets</h2>
+<p>As mentioned above, the different critics’ assessments correspond to different<br />
+sub-tables or blocks in our data. To use the <code>mfa()</code> function, we must supply<br />
+<code>sets</code>, a list of variable names or indices that dictates how the data are<br />
+organized into sub-tables. <code>sets</code> should be a list where each element is<br />
+either a character vector or a numeric vector. All of the following are valid:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sets.num &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">6</span>), <span class="kw">c</span>(<span class="dv">7</span>:<span class="dv">12</span>), <span class="kw">c</span>(<span class="dv">13</span>:<span class="dv">18</span>), <span class="kw">c</span>(<span class="dv">19</span>:<span class="dv">23</span>), <span class="kw">c</span>(<span class="dv">24</span>:<span class="dv">29</span>), <span class="kw">c</span>(<span class="dv">30</span>:<span class="dv">34</span>),
+  <span class="kw">c</span>(<span class="dv">35</span>:<span class="dv">38</span>), <span class="kw">c</span>(<span class="dv">39</span>:<span class="dv">44</span>), <span class="kw">c</span>(<span class="dv">45</span>:<span class="dv">49</span>), <span class="kw">c</span>(<span class="dv">50</span>:<span class="dv">53</span>))
+sets.char &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="kw">c</span>(<span class="st">'V1'</span>,<span class="st">'V2'</span>,<span class="st">'V3'</span>,<span class="st">'V4'</span>,<span class="st">'V5'</span>,<span class="st">'V6'</span>),
+  <span class="kw">c</span>(<span class="st">'V1.1'</span>,<span class="st">'V2.1'</span>,<span class="st">'V3.1'</span>,<span class="st">'V4.1'</span>,<span class="st">'V7'</span>,<span class="st">'V8'</span>),
+  <span class="kw">c</span>(<span class="st">'V1.2'</span>,<span class="st">'V2.2'</span>,<span class="st">'V3.2'</span>,<span class="st">'V4.2'</span>,<span class="st">'V9'</span>,<span class="st">'V10'</span>),
+  <span class="kw">c</span>(<span class="st">'V1.3'</span>,<span class="st">'V2.3'</span>,<span class="st">'V3.3'</span>,<span class="st">'V4.3'</span>,<span class="st">'V8.1'</span>),
+  <span class="kw">c</span>(<span class="st">'V1.4'</span>,<span class="st">'V2.4'</span>,<span class="st">'V3.4'</span>,<span class="st">'V4.4'</span>,<span class="st">'V11'</span>,<span class="st">'V12'</span>),
+  <span class="kw">c</span>(<span class="st">'V1.5'</span>,<span class="st">'V2.5'</span>,<span class="st">'V3.5'</span>,<span class="st">'V4.5'</span>,<span class="st">'V13'</span>),
+  <span class="kw">c</span>(<span class="st">'V1.6'</span>,<span class="st">'V2.6'</span>,<span class="st">'V3.6'</span>,<span class="st">'V4.6'</span>),
+  <span class="kw">c</span>(<span class="st">'V1.7'</span>,<span class="st">'V2.7'</span>,<span class="st">'V3.7'</span>,<span class="st">'V4.7'</span>,<span class="st">'V14'</span>,<span class="st">'V5.1'</span>),
+  <span class="kw">c</span>(<span class="st">'V1.8'</span>,<span class="st">'V2.8'</span>,<span class="st">'V3.8'</span>,<span class="st">'V4.8'</span>,<span class="st">'V15'</span>),
+  <span class="kw">c</span>(<span class="st">'V1.9'</span>,<span class="st">'V2.9'</span>,<span class="st">'V3.9'</span>,<span class="st">'V4.9'</span>))
+sets.mixed &lt;-<span class="st"> </span><span class="kw">c</span>(sets.num[<span class="dv">1</span>:<span class="dv">4</span>], sets.char[<span class="dv">5</span>:<span class="dv">10</span>])</code></pre></div>
+<p>Note that a given variable (column) may only belong to one sub-table. Note also<br />
+that not every variable in the data must be used. Only the variables that<br />
+belong to a sub-table are considered ‘active variables.’ In the wine data, the<br />
+following variables do not correspond to the assessment of any critic, and are<br />
+therefore inactive:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">all.equal</span>(<span class="kw">unlist</span>(sets.num), <span class="kw">unique</span>(<span class="kw">unlist</span>(sets.num)))
+<span class="co">#&gt; [1] TRUE</span>
+<span class="kw">all.equal</span>(<span class="kw">unlist</span>(sets.char), <span class="kw">unique</span>(<span class="kw">unlist</span>(sets.char)))
+<span class="co">#&gt; [1] TRUE</span>
+<span class="kw">head</span>(winedata[<span class="kw">c</span>(<span class="st">&quot;acidity&quot;</span>, <span class="st">&quot;ph&quot;</span>, <span class="st">&quot;alcohol&quot;</span>, <span class="st">&quot;res_sugar&quot;</span>)])
+<span class="co">#&gt;     acidity   ph alcohol res_sugar</span>
+<span class="co">#&gt; NZ1    5.60 3.38    14.0       3.0</span>
+<span class="co">#&gt; NZ2    5.30 3.53    13.5       3.6</span>
+<span class="co">#&gt; NZ3    6.20 3.27    14.0       3.0</span>
+<span class="co">#&gt; NZ4    8.50 3.19    13.5       3.9</span>
+<span class="co">#&gt; FR1    5.00 3.60    12.5       1.5</span>
+<span class="co">#&gt; FR2    5.88 3.00    12.5       2.0</span></code></pre></div>
+<hr />
+</div>
+<div id="default-function-arguments" class="section level2">
+<h2>Default Function Arguments</h2>
+<p>By default <code>ncomps = NULL</code> means that the MFA conducts a Generalized<br />
+Singular Value Decomposition and returns all of the Principal Components. The<br />
+user can choose a different value for <code>ncomps</code> if she or he wishes (any integer<br />
+between 1 and L, where L is the rank of the data).</p>
+<p>By default <code>center = TRUE</code> means that each variable (column) is centered by<br />
+dividing by its own mean.</p>
+<p>By default <code>scale = 'vector.norm'</code> means that each variable is scaled by<br />
+dividing by its vector norm (Euclidean length). Note that all scaling is done<br />
+after centering is completed.</p>
+<hr />
+</div>
+<div id="creating-an-mfa-object" class="section level2">
+<h2>Creating an <code>&quot;mfa&quot;</code> Object</h2>
+<p>Let’s create an <code>&quot;mfa&quot;</code> object using the wine data, and the ‘mixed’ sets list<br />
+created earlier. We will use the default values for <code>ncomps</code>, <code>center</code>, and<br />
+<code>scale</code>. If we print <code>mfa1</code>, we will see a brief summary about how the analysis<br />
+was conducted.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mfa1 &lt;-<span class="st"> </span><span class="kw">mfa</span>(<span class="dt">data =</span> winedata, <span class="dt">sets =</span> sets.num)
+mfa1
+<span class="co">#&gt; object &quot;mfa&quot;</span>
+<span class="co">#&gt; Data analyzed: winedata,</span>
+<span class="co">#&gt;               with 12 objects (rows)</span>
+<span class="co">#&gt;               and 53 active variables (columns)</span>
+<span class="co">#&gt; Number of sub-tables analyzed:  10</span>
+<span class="co">#&gt; Number of components generated: 12</span>
+<span class="co">#&gt; Column centering:               mean-centering</span>
+<span class="co">#&gt; Column scaling:                 divide by standard deviation</span></code></pre></div>
+<p>An <code>&quot;mfa&quot;</code> object is a list, so we can subset its various elements using<br />
+dollar-sign subsetting. For an explanation of each element, see the help<br />
+documentation for <code>mfa()</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(mfa1)
+<span class="co">#&gt;  [1] &quot;eigvals&quot;    &quot;Fcommon&quot;    &quot;Fpartial&quot;   &quot;Q&quot;          &quot;arglist&quot;   </span>
+<span class="co">#&gt;  [6] &quot;dimdata&quot;    &quot;K&quot;          &quot;L&quot;          &quot;origdata&quot;   &quot;data_scale&quot;</span>
+<span class="co">#&gt; [11] &quot;subtable&quot;   &quot;comps_gen&quot;  &quot;sets&quot;       &quot;a&quot;          &quot;alpha&quot;</span>
+<span class="kw">help</span>(mfa, <span class="dt">package =</span> <span class="st">&quot;mfaMKTLT&quot;</span>)
+<span class="co">#&gt; Using development documentation for mfa</span></code></pre></div>
+<p>Some of the most important elements of the output are:</p>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left"><code>eigvals</code></td>
+<td align="left">The vector of eigenvalues.</td>
+</tr>
+<tr class="even">
+<td align="left"><code>Fcommon</code></td>
+<td align="left">The matrix of common factor scores.</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>Fpartial</code></td>
+<td align="left">A list of matrices of partial factor scores.</td>
+</tr>
+<tr class="even">
+<td align="left"><code>Q</code></td>
+<td align="left">The matrix of loadings (right singular vectors).</td>
+</tr>
+</tbody>
+</table>
+<p>Let’s take a quick look at each of these elements.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(mfa1$eigvals)
+<span class="co">#&gt; [1] 0.77025513 0.12292544 0.09071052 0.07601535 0.05960069 0.03920317</span>
+<span class="kw">head</span>(mfa1$Fcommon[,<span class="dv">1</span>:<span class="dv">5</span>])
+<span class="co">#&gt;           [,1]        [,2]        [,3]       [,4]         [,5]</span>
+<span class="co">#&gt; nz1 -0.9802057  0.16325474 -0.02833247 -0.1229674 -0.138960264</span>
+<span class="co">#&gt; nz2 -0.8088651  0.03262348  0.16181752 -0.3768692 -0.201380272</span>
+<span class="co">#&gt; nz3 -0.7610058 -0.45418702 -0.00567849 -0.1346319 -0.061412658</span>
+<span class="co">#&gt; nz4 -1.1149837 -0.16586214 -0.22362954  0.5671554  0.006220427</span>
+<span class="co">#&gt; fr1  1.3727568 -0.12838880  0.12163879 -0.3158033 -0.228652248</span>
+<span class="co">#&gt; fr2  1.2640154 -0.10813651 -0.37010578  0.0877037  0.413438110</span>
+<span class="kw">head</span>(mfa1$Fpartial[[<span class="dv">1</span>]][,<span class="dv">1</span>:<span class="dv">5</span>])
+<span class="co">#&gt;           [,1]       [,2]        [,3]        [,4]        [,5]</span>
+<span class="co">#&gt; nz1 -1.0368259  0.1554305 -0.13930669 -0.24679031  0.16276383</span>
+<span class="co">#&gt; nz2 -1.1792261  0.5962645  0.27220450 -0.63826129 -0.06810246</span>
+<span class="co">#&gt; nz3 -0.2127339 -0.1042277 -0.05948572  0.01383920  0.12781805</span>
+<span class="co">#&gt; nz4 -0.9464768  0.4462862 -0.11346836  0.02629150  0.40553050</span>
+<span class="co">#&gt; fr1  1.5464473 -0.6761448 -0.21655108  0.05814535 -0.66423417</span>
+<span class="co">#&gt; fr2  1.1761338 -0.7469843 -0.38399501  0.43681149  0.01431519</span>
+<span class="kw">head</span>(mfa1$Q[,<span class="dv">1</span>:<span class="dv">5</span>])
+<span class="co">#&gt;            [,1]       [,2]        [,3]        [,4]        [,5]</span>
+<span class="co">#&gt; [1,] -0.2943913  0.3182842 -0.04249546  0.19187246  0.06757806</span>
+<span class="co">#&gt; [2,] -0.2665541 -0.2481752 -0.28305279 -0.08820088  0.35536894</span>
+<span class="co">#&gt; [3,] -0.2599726  0.3958982  0.08842697  0.08463164  0.20021349</span>
+<span class="co">#&gt; [4,]  0.2411168 -0.1836325 -0.50646336  0.09203558 -0.15575548</span>
+<span class="co">#&gt; [5,]  0.2863237  0.1610278 -0.10801208  0.02966091  0.04379593</span>
+<span class="co">#&gt; [6,] -0.2329070  0.1288621 -0.23047446 -0.45838724 -0.35833696</span></code></pre></div>
+<hr />
+</div>
+<div id="summary-methods" class="section level2">
+<h2>Summary Methods</h2>
+<p>The <code>&quot;mfaMKTLT&quot;</code> package provides a variety of summary methods to help study<br />
+different aspects of the analysis. <code>eigsum</code> provides a <strong>summary of eigenvalues</strong>,<br />
+singular values, and inertia.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">eigsum &lt;-<span class="st"> </span><span class="kw">eigsum</span>(mfa1)
+<span class="kw">round</span>(eigsum[, <span class="dv">1</span>:<span class="dv">5</span>], <span class="dv">3</span>)
+<span class="co">#&gt;                        comp 1 comp 2 comp 3 comp 4 comp 5</span>
+<span class="co">#&gt; Singular Values         0.878  0.351  0.301  0.276  0.244</span>
+<span class="co">#&gt; Eigenvalues             0.770  0.123  0.091  0.076  0.060</span>
+<span class="co">#&gt; Cumulative Eigenvalues  0.770  0.893  0.984  1.060  1.120</span>
+<span class="co">#&gt; % Inertia              61.230  9.772  7.211  6.043  4.738</span>
+<span class="co">#&gt; Cumulative % Inertia   61.230 71.001 78.212 84.255 88.993</span></code></pre></div>
+<hr />
+<p>We can look at the <strong>contributions</strong> of observations, variables, and tables to<br />
+components, with the functions <code>obscont</code>, <code>varcont</code>, and <code>tabcont</code><br />
+respectively.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The [i,j] element is the contribution of observation i to component j.</span>
+obscont &lt;-<span class="st"> </span><span class="kw">obscont</span>(mfa1) 
+<span class="kw">round</span>(obscont[<span class="dv">1</span>:<span class="dv">5</span>, <span class="dv">1</span>:<span class="dv">5</span>], <span class="dv">3</span>) 
+<span class="co">#&gt;      [,1]  [,2]  [,3]  [,4]  [,5]</span>
+<span class="co">#&gt; nz1 0.104 0.018 0.001 0.017 0.027</span>
+<span class="co">#&gt; nz2 0.071 0.001 0.024 0.156 0.057</span>
+<span class="co">#&gt; nz3 0.063 0.140 0.000 0.020 0.005</span>
+<span class="co">#&gt; nz4 0.134 0.019 0.046 0.353 0.000</span>
+<span class="co">#&gt; fr1 0.204 0.011 0.014 0.109 0.073</span>
+
+<span class="co"># The [i,j] element is the contribution of variable i to component j.</span>
+varcont &lt;-<span class="st"> </span><span class="kw">varcont</span>(mfa1) 
+<span class="kw">round</span>(varcont[<span class="dv">1</span>:<span class="dv">5</span>, <span class="dv">1</span>:<span class="dv">5</span>], <span class="dv">3</span>) 
+<span class="co">#&gt;       [,1]  [,2]  [,3]  [,4]  [,5]</span>
+<span class="co">#&gt; [1,] 0.021 0.024 0.000 0.009 0.001</span>
+<span class="co">#&gt; [2,] 0.017 0.015 0.019 0.002 0.030</span>
+<span class="co">#&gt; [3,] 0.016 0.038 0.002 0.002 0.010</span>
+<span class="co">#&gt; [4,] 0.014 0.008 0.062 0.002 0.006</span>
+<span class="co">#&gt; [5,] 0.020 0.006 0.003 0.000 0.000</span>
+
+<span class="co"># The [i,j] element is the contribution of sub-table i to component j.</span>
+tabcont &lt;-<span class="st"> </span><span class="kw">tabcont</span>(mfa1) 
+<span class="kw">round</span>(tabcont[<span class="dv">1</span>:<span class="dv">5</span>, <span class="dv">1</span>:<span class="dv">5</span>], <span class="dv">3</span>) 
+<span class="co">#&gt;       [,1]  [,2]  [,3]  [,4]  [,5]</span>
+<span class="co">#&gt; [1,] 0.101 0.095 0.099 0.065 0.078</span>
+<span class="co">#&gt; [2,] 0.100 0.068 0.123 0.034 0.100</span>
+<span class="co">#&gt; [3,] 0.101 0.152 0.063 0.199 0.041</span>
+<span class="co">#&gt; [4,] 0.096 0.049 0.074 0.101 0.073</span>
+<span class="co">#&gt; [5,] 0.098 0.063 0.248 0.264 0.153</span></code></pre></div>
+<hr />
+<p>There are two ways to consider <strong>between-table relationships</strong>: The Rv<br />
+coefficient and the Lg coefficient both tell us how similar two sub-tables are.<br />
+The Rv can take values in <code>[0-1]</code> while Lg can take any positive real value.<br />
+For both, higher values indicate a higher degree of similarity.</p>
+<p>Let’s consider the Rv and Lg coefficients between sub-tables 2 and 5.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rv_coeff</span>(mfa1$subtable[[<span class="dv">2</span>]], mfa1$subtable[[<span class="dv">5</span>]])
+<span class="co">#&gt; [1] 0.7108624</span>
+<span class="kw">lg_coeff</span>(mfa1$subtable[[<span class="dv">2</span>]], mfa1$subtable[[<span class="dv">5</span>]])
+<span class="co">#&gt; [1] 0.8004526</span></code></pre></div>
+<p>If we are interested in studying the between-table structure of multiple<br />
+sub-tables at once, we can use the <code>gentable</code> function to see Rv or Lg<br />
+coefficients. The [i,j] element of the resulting matrix tells us about the<br />
+similarity of sub-tables i and j. Note that the matrix is symmetric.</p>
+<p>Let’s consider the between-table structure for sub-tables 1-3. We will first<br />
+display the Rv coefficients, and then the Lg.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># rv coefficients</span>
+<span class="kw">gentable</span>(mfa1$data_scale, <span class="kw">as.list</span>(<span class="kw">c</span>(sets.num[<span class="dv">1</span>], sets.char[<span class="dv">2</span>:<span class="dv">3</span>])),
+          <span class="kw">paste0</span>(<span class="st">&quot;sub-table_&quot;</span>, <span class="dv">1</span>:<span class="dv">3</span>), <span class="dt">func =</span> rv_coeff)
+<span class="co">#&gt;             sub-table_1 sub-table_2 sub-table_3</span>
+<span class="co">#&gt; sub-table_1 1           0.8677509   0.8603765  </span>
+<span class="co">#&gt; sub-table_2 0.8677509   1           0.7755188  </span>
+<span class="co">#&gt; sub-table_3 0.8603765   0.7755188   1</span>
+
+<span class="co"># lg coefficients</span>
+<span class="kw">gentable</span>(mfa1$data_scale, <span class="kw">as.list</span>(<span class="kw">c</span>(sets.num[<span class="dv">1</span>], sets.char[<span class="dv">2</span>:<span class="dv">3</span>])),
+          <span class="kw">paste0</span>(<span class="st">&quot;sub-table_&quot;</span>, <span class="dv">1</span>:<span class="dv">3</span>), <span class="dt">func =</span> lg_coeff)
+<span class="co">#&gt;             sub-table_1 sub-table_2 sub-table_3</span>
+<span class="co">#&gt; sub-table_1 1.05858     0.9180402   0.9443864  </span>
+<span class="co">#&gt; sub-table_2 0.9180402   1.057327    0.8507391  </span>
+<span class="co">#&gt; sub-table_3 0.9443864   0.8507391   1.138148</span></code></pre></div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

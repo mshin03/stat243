@@ -1,0 +1,33 @@
+Package: mfaMKTLT
+Title: Multiple Factor Analysis (MFA)
+Version: 0.3
+Authors@R: person("Minchul", "Shin", email = "mshin02@berkeley.edu",
+                  role = "aut")
+           person("Ko", "Donghyeon", email = "Donghyeon_ko@berkeley.edu",
+                   role = "aut")
+           person("Taehee", "Jung", email = "taehee_jung@berkeley.edu",
+                   role = "aut")
+           person("Lev", "Golod", email = "levgolod1@berkeley.edu",
+                   role = c("aut", "cre"))
+           person("Temi N", "Lal", email = "tnlal@berkeley.edu",
+                   role = "aut")
+Description: This package provides a function to perform MFA, and to find
+    related quantities of interest, such as eigenvalues, factor scores, and
+    loadings. Supplementary functions calculate information related to between-
+    table structure. MFA is a technique used when one has multiple data sets
+    collected about the same group of objects. This package has examples based
+    on a fictional wine data set: 10 different wine critics assessed the same
+    12 wines.
+License: open source
+LazyData: TRUE
+Collate: prelim.R error_messages.R data_processing.R data.R mfa.R
+        mfa_summary_methods.R contributions.R between_table.R plot.R
+        bootstrap.R
+RoxygenNote: 5.0.1
+Depends: R (>= 3.1.0), ggplot2, expm
+Suggests: stringr, knitr, rmarkdown, testthat
+VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2016-12-01 21:07:39 UTC; levgolod
+Author: Temi N Lal [aut, cre]
+Maintainer: Temi N Lal <tnlal@berkeley.edu>

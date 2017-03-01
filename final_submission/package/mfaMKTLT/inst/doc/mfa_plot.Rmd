@@ -1,0 +1,161 @@
+---
+title: "MFA Plotting with mfaMKTLT"
+author: "Minchul Shin, Ko Donghyeon, Taehee Jung, Lev Golod, Temi N Lal"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{MFA Plotting with mfaMKTLT}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(collapse = T, comment = "#>")
+library(mfaMKTLT)
+```
+
+## Initializing an `"mfa"` Object
+
+First, let's get an `"mfa"` object up and running. We will analyze the wine  
+data, and use all of the default arguments.
+```{r initial}
+sets.num <- list(c(1:6), c(7:12), c(13:18), c(19:23), c(24:29), c(30:34),
+  c(35:38), c(39:44), c(45:49), c(50:53))
+mfa1 <- mfa(data = winedata, sets = sets.num)
+mfa1
+```
+
+The `"mfaMKTLT"` package allows the user to create six different plots:    
+Compromise/Common Factor Scores, Partial Factor Scores, Loadings, Eigenvalues,  
+Compromise + Partial Factor Scores and Compromise + Partial Factor Scores.  
+All plots are created using the `plot` method for the `"mfa"` object class.  
+The user specifies the type of plot through the `type` argument. Let's take  
+a look at the six types of plots.  
+
+-------------------------------------------------------------------------------
+
+## Compromise/Common Factor Scores
+
+As the name suggests, the Compromise Factor Scores represent a compromise among  
+the sub-tables regarding the coordinates of each object (row) along the  
+components. The user can choose which components she or he wants to see. Let's  
+start by looking at components 1 and 2. These happen to be the default 
+components.
+```{r common1}
+plot(mfa1, type = "compromise", mytitle = "Common Factor Scores")
+```
+
+We can choose different components if we like. Let's plot component 3 on the  
+x-axis with `xdim` and component 7 on the y-axis with `ydim`. We can control  
+the point size with `size`. These new plot points are big-league!
+```{r common2}
+plot(mfa1, type = "compromise", xdim = 3, ydim = 7, size = 5, 
+  mytitle = "Common Factor Scores")
+```
+
+Default legend of this plot is rownames, which is mached to observation name.  
+But we can set up legend as we want. Since rownames have the pattern, which  
+is two characters of nation + number, let's set up legend as first two  
+characters of rownames and label with last number. Now, the graph looks more  
+recognizable than the previous one.  
+```{r common3}
+plot(mfa1, type = "compromise", legend=substr(rownames(mfa1$Fcommon),1,2),
+label=substr(rownames(mfa1$Fcommon),3,3))
+```
+-------------------------------------------------------------------------------
+
+## Partial Factor Scores
+
+The Partial Factor Scores plot lets us see where the objects fall along the  
+component axes for each individual sub-table. The user can choose which  
+sub-table(s) she/he wants to see with `subtabs`. The default value, `NULL`,  
+means that all sub-tables will be displayed. As before, we can also choose  
+the point size, and which components we are interested in.  
+
+As we may observe, displaying too many sub-tables at once may make the plot  
+very hard to read. It may be preferable to look at a few at a time. Note that  
+if we don't supply a title, the function will choose a title automatically,  
+based on the `type` of the plot. When dealing with multiple sub-plots, we may  
+also use `facetrows` to control how many rows the sub-plots are placed into.  
+The default value is 2.
+
+```{r pf1}
+plot(mfa1, type = "partial.factor", size = 2)
+plot(mfa1, type = "partial.factor", size = 2.5, subtabs = c(1,2,4), 
+     xdim = 4, ydim = 2, facetrows = 3)
+```
+
+Also, legend and label can be used in the same way as we did in the compromise  
+factor score.  
+```{r pf2}
+plot(mfa1, type = "partial.factor", size = 4, subtabs = NULL, xdim = 2, ydim = 3, 
+     legend=substr(rownames(mfa1$Fpartial[[1]]),1,2), 
+     label=substr(rownames(mfa1$Fcommon),3,3))
+```
+
+-------------------------------------------------------------------------------
+
+## Loadings
+
+This plot displays the Loadings, which are the right singular vectors from the  
+Generalized Singular Value Decomposition that is computed as part of MFA.  
+
+As we may learn by reading the documentation for `winedata`, each of the  
+critics used the first four variables, cat pee, passion fruit, green pepper,  
+and mineral, to assess the wines. Each critic was also free to choose as many  
+as two additional variables. Let's use this information to make a more  
+informative legend, using the optional `legend` paramter. For ease of reading,  
+we will only look at sub-tables 9 and 10.
+```{r loadings1}
+plot(mfa1, type = "loadings", size = 2.5, subtabs = c(9,10), 
+     legend = c("cat pee", "passion fruit", "green pepper", "mineral",
+                "optional 1", "optional 2"))
+```
+
+-------------------------------------------------------------------------------
+
+## Eigenvalues
+
+In this plot, we use the eigenvalues, which is a default value in the mfa object.  
+Thus, no arguments except data and type are used in this plot. Based on the  
+eigenvalues of the components, bar chart is plotted.  
+```{r loadings2}
+plot(mfa1, type = "eigenvalues")
+```
+
+-------------------------------------------------------------------------------
+
+## Compromise + Partial Factor Scores
+
+using type 'compromise.partial', first two plots can be combined in an one plot.   
+Arguments xdim/ydim can be chosen by user.  
+```{r com.pf1}
+plot(mfa1, type = "compromise.partial", xdim = 1, ydim = 10)
+```
+
+Note that legend and label can be applied on this plot, too.
+```{r,com.pf2}
+plot(mfa1, type = "compromise.partial", xdim = 1, ydim = 2, size = 5,
+     legend=substr(rownames(mfa1$Fcommon),1,2), label=substr(rownames(mfa1$Fcommon),3,3))
+```
+
+-------------------------------------------------------------------------------
+
+## Bootstrap ratio plots
+
+Final plot is drawn by the result of bootstrap function. This function first  
+gets the bootstrap samples of the partial factor scores with sample size as a  
+value of argument bootstrap_size. Its difualt value is 1000. Then it calculates  
+the t-value, which is bootstrap mean divided by standard deviation. Function  
+results keep this t-value, and also bootstrap mean and standard deviation.  
+
+The plot value is based on the component's t-value of the bootstrap result.  
+It is a rotated bar chart where the x-axis is the t-value and y-axis is the  
+observation name(=rownames.) Users can choose as many components as they  
+want with the argument bootstrap_comps. The defaule value is c(1,2). Since  
+final plots are represented as a multi-plots on one page, we can control how  
+many rows the sub-plots are placed into with the argument `facetrows`. The  
+default value of this argument is 2.  
+```{r loadings}
+plot(mfa1, type= "bootstrap", bootstrap_size = 2000, bootstrap_comps=c(1,4), facetrows=2)
+```

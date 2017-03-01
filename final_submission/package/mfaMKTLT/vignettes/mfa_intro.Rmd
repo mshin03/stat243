@@ -1,0 +1,202 @@
+---
+title: "MFA with mfaMKTLT"
+author: "Minchul Shin, Ko Donghyeon, Taehee Jung, Lev Golod, Temi N Lal"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with mfaMKTLT}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(collapse = T, comment = "#>")
+library(mfaMKTLT)
+```
+
+## Acknowledgements
+
+The authors of the package would like to thank Professor Gaston Sanchez, as  
+well as Herve Abdi1, Lynne J. Williams, and Domininique Valentin (WIREs Comput  
+Stat 2013. doi: 10.1002/wics.1246)  
+
+-------------------------------------------------------------------------------
+
+## When to use MFA?
+
+MFA (multifactor analysis) is a techinque designed to "handle multiple data  
+tables that measure sets of variables collected on the same observations." For  
+example, the file `winedata` which comes included with this package, has the  
+results of a fictitious wine-tasting experiment, where 10 wine critics rated  
+12 different wines from different regions. 
+
+-------------------------------------------------------------------------------
+
+## Preliminaries
+
+Let's familiarize ourselves a bit with this data set. Each wine critic used  
+4 common variables (V1...V4) to rate the wines, and was also free to choose up  
+to two additional variables. Whenever we see "V1" or "V1." in the variable  
+names, that indicates the beginning of a new block or sub-table. For example,  
+the first 6 columns correspond to critic 1, and the next 6 correspond to critic  
+2. The different wines are represented as row names.  
+
+In general, when using the `"mfaMKTLT"` package, the data must be either a data  
+frame or a matrix.  
+```{r prelim1}
+head(winedata[1:12])
+is.data.frame(winedata)
+```
+
+-------------------------------------------------------------------------------
+
+## Sets
+
+As mentioned above, the different critics' assessments correspond to different  
+sub-tables or blocks in our data. To use the `mfa()` function, we must supply  
+`sets`, a list of variable names or indices that dictates how the data are  
+organized into sub-tables. `sets` should be a list where each element is  
+either a character vector or a numeric vector. All of the following are valid:
+```{r sets1}
+sets.num <- list(c(1:6), c(7:12), c(13:18), c(19:23), c(24:29), c(30:34),
+  c(35:38), c(39:44), c(45:49), c(50:53))
+sets.char <- list(c('V1','V2','V3','V4','V5','V6'),
+  c('V1.1','V2.1','V3.1','V4.1','V7','V8'),
+  c('V1.2','V2.2','V3.2','V4.2','V9','V10'),
+  c('V1.3','V2.3','V3.3','V4.3','V8.1'),
+  c('V1.4','V2.4','V3.4','V4.4','V11','V12'),
+  c('V1.5','V2.5','V3.5','V4.5','V13'),
+  c('V1.6','V2.6','V3.6','V4.6'),
+  c('V1.7','V2.7','V3.7','V4.7','V14','V5.1'),
+  c('V1.8','V2.8','V3.8','V4.8','V15'),
+  c('V1.9','V2.9','V3.9','V4.9'))
+sets.mixed <- c(sets.num[1:4], sets.char[5:10])
+```
+
+Note that a given variable (column) may only belong to one sub-table. Note also  
+that not every variable in the data must be used. Only the variables that  
+belong to a sub-table are considered 'active variables.' In the wine data, the  
+following variables do not correspond to the assessment of any critic, and are  
+therefore inactive:
+```{r sets2}
+all.equal(unlist(sets.num), unique(unlist(sets.num)))
+all.equal(unlist(sets.char), unique(unlist(sets.char)))
+head(winedata[c("acidity", "ph", "alcohol", "res_sugar")])
+```
+
+-------------------------------------------------------------------------------
+
+## Default Function Arguments
+
+By default `ncomps = NULL` means that the MFA conducts a Generalized  
+Singular Value Decomposition and returns all of the Principal Components. The  
+user can choose a different value for `ncomps` if she or he wishes (any integer  
+between 1 and L, where L is the rank of the data).  
+
+By default `center = TRUE` means that each variable (column) is centered by  
+dividing by its own mean.  
+
+By default `scale = 'vector.norm'` means that each variable is scaled by  
+dividing by its vector norm (Euclidean length). Note that all scaling is done  
+after centering is completed.  
+
+-------------------------------------------------------------------------------
+
+## Creating an `"mfa"` Object  
+
+Let's create an `"mfa"` object using the wine data, and the 'mixed' sets list  
+created earlier. We will use the default values for `ncomps`, `center`, and  
+`scale`. If we print `mfa1`, we will see a brief summary about how the analysis  
+was conducted. 
+```{r mfa1}
+mfa1 <- mfa(data = winedata, sets = sets.num)
+mfa1
+```
+
+An `"mfa"` object is a list, so we can subset its various elements using  
+dollar-sign subsetting. For an explanation of each element, see the help  
+documentation for `mfa()`. 
+```{r mfa2}
+names(mfa1)
+help(mfa, package = "mfaMKTLT")
+```
+
+Some of the most important elements of the output are:  
+
+|            |                                                  |
+|:-----------|:-------------------------------------------------|
+| `eigvals`  | The vector of eigenvalues.                       |
+| `Fcommon`  | The matrix of common factor scores.              |
+| `Fpartial` | A list of matrices of partial factor scores.     |
+| `Q`        | The matrix of loadings (right singular vectors). |
+
+Let's take a quick look at each of these elements.  
+```{r mfa3}
+head(mfa1$eigvals)
+head(mfa1$Fcommon[,1:5])
+head(mfa1$Fpartial[[1]][,1:5])
+head(mfa1$Q[,1:5])
+```
+
+-------------------------------------------------------------------------------
+
+## Summary Methods
+
+The `"mfaMKTLT"` package provides a variety of summary methods to help study  
+different aspects of the analysis. `eigsum` provides a __summary of eigenvalues__,  
+singular values, and inertia.  
+```{r sum1}
+eigsum <- eigsum(mfa1)
+round(eigsum[, 1:5], 3)
+```
+
+-------------------------------------------------------------------------------
+
+We can look at the __contributions__ of observations, variables, and tables to  
+components, with the functions `obscont`, `varcont`, and `tabcont`  
+respectively.  
+```{r sum2}
+# The [i,j] element is the contribution of observation i to component j.
+obscont <- obscont(mfa1) 
+round(obscont[1:5, 1:5], 3) 
+
+# The [i,j] element is the contribution of variable i to component j.
+varcont <- varcont(mfa1) 
+round(varcont[1:5, 1:5], 3) 
+
+# The [i,j] element is the contribution of sub-table i to component j.
+tabcont <- tabcont(mfa1) 
+round(tabcont[1:5, 1:5], 3) 
+```
+
+-------------------------------------------------------------------------------
+
+There are two ways to consider __between-table relationships__: The Rv  
+coefficient and the Lg coefficient both tell us how similar two sub-tables are.  
+The Rv can take values in `[0-1]` while Lg can take any positive real value.  
+For both, higher values indicate a higher degree of similarity. 
+
+Let's consider the Rv and Lg coefficients between sub-tables 2 and 5.  
+```{r sum3}
+rv_coeff(mfa1$subtable[[2]], mfa1$subtable[[5]])
+lg_coeff(mfa1$subtable[[2]], mfa1$subtable[[5]])
+```
+
+If we are interested in studying the between-table structure of multiple  
+sub-tables at once, we can use the `gentable` function to see Rv or Lg  
+coefficients. The [i,j] element of the resulting matrix tells us about the  
+similarity of sub-tables i and j. Note that the matrix is symmetric.  
+
+Let's consider the between-table structure for sub-tables 1-3. We will first  
+display the Rv coefficients, and then the Lg.
+```{r sum4}
+# rv coefficients
+gentable(mfa1$data_scale, as.list(c(sets.num[1], sets.char[2:3])),
+          paste0("sub-table_", 1:3), func = rv_coeff)
+
+# lg coefficients
+gentable(mfa1$data_scale, as.list(c(sets.num[1], sets.char[2:3])),
+          paste0("sub-table_", 1:3), func = lg_coeff)
+```
+
+
